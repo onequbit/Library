@@ -366,5 +366,10 @@ namespace Library
             }
             return normalized;
         }
+
+        public static string Name<T>(this T enumValue) where T : System.Enum
+        {
+            return Enum.GetName(typeof(T), enumValue);
+        }
     }
 }
