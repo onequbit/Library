@@ -45,6 +45,40 @@ namespace Library
         } 
     }
 
+    // public class IfDebugMsg
+    // {
+    //     public IfDebugMsg(string message)
+    //     {
+    //         #if DEBUG            
+    //         DialogResult result = MessageBox.Show(message, "DEBUG", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
+    //         if (result == DialogResult.Cancel)
+    //         {
+    //             Environment.Exit(-1);
+    //         }
+    //         #endif
+    //     }
+
+    //     public IfDebugMsg(string[] messageArray)
+    //     {
+    //         #if DEBUG
+    //         List<string> messageBlock = new List<string>{};
+    //         string newMessage = "";
+    //         foreach(string message in messageArray)
+    //         {                    
+    //             messageBlock.Add(message);
+    //             if (messageBlock.Count >= 25)
+    //             {
+    //                 newMessage = messageBlock.ToArray().Join("\n");
+    //                 new IfDebugMsg(newMessage);                    
+    //                 messageBlock.Clear();
+    //             }
+    //         }
+    //         newMessage = messageBlock.ToArray().Join("\n");
+    //         new IfDebugMsg(newMessage);
+    //         #endif
+    //     }
+    // }
+    
     public static partial class ExtensionMethods
     {   
         public static string CurrentProgramName(this object program)
@@ -100,6 +134,20 @@ namespace Library
                 if (found) return true;
             }
             return false;            
+        }
+
+        // public static void CheckForKillSignal(this string[] args)
+        // {
+        //     if (args.Contains("--KillClones")) AdminProcess.KillClones();
+        // }
+
+        public static string AsPath(this string str)
+        {
+            char singleBackSlash = '\\';
+            string doubleBackSlash = "\\\\";            
+            bool isUnescapedPath = str.Contains(singleBackSlash) && !(str.Contains(doubleBackSlash));
+            if (isUnescapedPath) return str.Replace($"{singleBackSlash}",doubleBackSlash).Replace(" ",@"\ ");
+            else return str;
         }
 
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
@@ -161,6 +209,24 @@ namespace Library
             });            
         }
 
+        public static Process ToRunAsAdmin(this Process p, string commandStr)
+        {
+            try
+            {
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();                
+                string[] parts = commandStr.Split(' ');
+                startInfo.FileName = parts[0].NoParens(); // "cmd.exe";
+                startInfo.Arguments = commandStr.NoParens().Replace(parts[0],"").Trim(); // $"/k {commandStr}";                
+                startInfo.Verb = "runas";
+                p.StartInfo = startInfo;                
+            }
+            catch (Exception ex)
+            {
+                ex.ToMessageBox();
+            }
+            return p;
+        }
+
         private static void showMessageWithOptions(string message, string title, bool exitOption = false)
         {
             if (Environment.UserInteractive)
@@ -177,7 +243,7 @@ namespace Library
                     Environment.Exit(-1);
                 }
             } else {
-                MessageBox.Show(message, title);                
+                MessageBox.Show(message, title);
             }                  
         }
 

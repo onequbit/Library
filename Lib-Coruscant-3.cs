@@ -13,8 +13,16 @@ using System.Windows.Forms;
 
 namespace Library
 {
+
+    
+
     public static partial class Lib
     {
+        public static string GetAdminCmdOutput(string command)
+        {
+            return AdminProcess.GetOutput(command);
+        }
+
         public static string GetPseudoCmdOutput(string command)
         {
             string output;
@@ -25,11 +33,11 @@ namespace Library
                     FileName = "pseudo.exe",
                     Arguments = command,
                     UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardOutput = true
+                    // RedirectStandardError = true
                 };
                 pseudoCall.Start();
-                CmdResult result = new CmdResult(pseudoCall);
+                // CmdResult result = new CmdResult(pseudoCall);
                 output = pseudoCall.StandardOutput.ReadToEnd();
                 pseudoCall.WaitForExit();
                 if (pseudoCall.ExitCode != 0) output = "";                
@@ -37,8 +45,9 @@ namespace Library
             return output;
         }
 
-        public static CmdResult GetCmdOutput(string command)
-        {                           
+        public static string GetCmdOutput(string command)
+        {
+            string output;            
             using (Process cmdCall = new Process())
             {
                 cmdCall.StartInfo = new ProcessStartInfo()
@@ -46,19 +55,23 @@ namespace Library
                     FileName = "cmd.exe",
                     Arguments = $"/c {command}",
                     UseShellExecute = false,
-                    RedirectStandardOutput = true,              
-                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    // RedirectStandardError = true,
                     CreateNoWindow = true
                 };
-                return cmdCall.GetCommandResult();             
-            }            
+                // return cmdCall.GetCommandResult();
+                cmdCall.Start();
+                output = cmdCall.StandardOutput.ReadToEnd();
+                cmdCall.WaitForExit();                
+            }
+            return output;         
         }
 
         public static string[] CmdWhere(string dir, string filename)
         {
             List<string> paths = new List<string>();
             string searchCmd = $"where /r {dir} {filename}";            
-            string[] whereOutput = Lib.GetCmdOutput(searchCmd).OutputLines;                        
+            string[] whereOutput = Lib.GetCmdOutput(searchCmd).Split('\n');                        
             foreach(string path in whereOutput)
             {
                 if (path.Trim().Length > 3)
@@ -71,7 +84,7 @@ namespace Library
 
         public static string[] GetEnvPaths()
         {
-            string[] envPaths = Lib.GetCmdOutput("echo %path%").OutputPaths;
+            string[] envPaths = Lib.GetCmdOutput("echo %path%").Split(';');
             List<string> paths = new List<string>();            
             foreach(string path in envPaths)
             {   

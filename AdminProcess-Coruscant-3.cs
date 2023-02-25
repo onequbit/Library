@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Security.Principal;
+using System.Threading;
 using System.Windows.Forms;
 
 
@@ -133,37 +134,27 @@ namespace Library
             return output; 
         }
 
-        // public static bool ElevatedContext()
-        // {
-        //     bool isElevated;
-        //     using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-        //     {
-        //         WindowsPrincipal principal = new WindowsPrincipal(identity);
-        //         isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
-        //     }
-        //     return isElevated;
-        // }
+        public static string GetOutput(string commandLine)
+        {
+            string output = new AdminProcess(commandLine).GetOutput();             
+            return output;
+        }
 
-        // public static void EnsureElevatedContext()
+        // public static void KillClones()
         // {
-        //     if (AdminProcess.ElevatedContext()) return;            
-        //     else
+        //     Process[] runningProcesses = Process.GetProcesses();
+        //     int myPid = Process.GetCurrentProcess().Id;
+        //     string myName = Process.GetCurrentProcess().ProcessName;
+        //     foreach (Process process in runningProcesses)
         //     {
-        //         new AdminProcess(Environment.CommandLine).Start();                
-        //         Process.GetCurrentProcess().Kill();
-        //     }                
-        // }
-
-        // public static void EnsureElevatedContext(string command, Action<AdminProcess, string> doAsAdmin)
-        // {
-        //     if (AdminProcess.ElevatedContext()) return;
-        //     using (var elevated = new AdminProcess(Environment.CommandLine))
-        //     {
-        //         elevated.Start();
-        //         elevated.WaitForExit();
-        //         doAsAdmin(elevated, command);
+        //         if (process.ProcessName.Equals(myName) &&
+        //             process.Id != myPid)
+        //         {
+        //             process.Kill();
+        //         }
         //     }
-        //     Process.GetCurrentProcess().Kill();
-        // }
+        //     new Thread(() => MessageBox.Show($"{myName} terminated")).Start();
+        //     Environment.Exit(0);
+        // }        
     }
 }

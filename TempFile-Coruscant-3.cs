@@ -54,11 +54,13 @@ namespace Library
         }
 
         public string GetContents()
-        {
+        {                           
             string fileContents = "";
             try
-            {
-                bool fileExists = File.Exists(this.path);               
+            {                
+                bool fileExists = File.Exists(this.path);
+                if (!fileExists)
+                    throw new FileNotFoundException(this.path);
                 using (StreamReader r = File.OpenText(this.path))
                 {
                     fileContents = r.ReadToEnd();                    
